@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="170" height="116" creationComplete="completeHandler()">
+	<mx:Script>
+		<![CDATA[
+			import controls.FixedSliderThumb;
+			import mx.events.SliderEvent;
+			import utils.BezierAdapter;
+			private var circle:Sprite = new Sprite();
+			private var currentColor:uint = 0x000000;
+			
+			public function get value():Number
+			{
+				return slider.value;
+			}
+			
+			public function set value(val:Number):void
+			{
+				slider.value = val;
+			}
+			
+			public function set color(val:uint):void
+			{
+				currentColor = val;
+				redrawCircle(slider.value / 2 + 1 , val);
+			}
+			
+			private function completeHandler():void
+			{
+				redrawCircle(slider.value / 2 + 1, currentColor);
+				trace(slider.value)
+			}
+			
+			private function changeHandler(event:SliderEvent):void
+			{
+				redrawCircle(event.value/2 + 1, currentColor);
+				dispatchEvent(new Event("CHANGE"));
+			}
+			
+			private function dragHnadler(event:SliderEvent):void
+			{
+				redrawCircle(event.value/2 + 1, currentColor);
+			}
+			
+			private function redrawCircle(value:Number, col:uint):void
+			{
+				circle.graphics.clear();
+				circle.graphics.beginFill(col);
+				circle.graphics.drawCircle(sampleCanvas.width /2 ,sampleCanvas.height /2, value);
+				circle.graphics.endFill();
+				sampleCanvas.addChild(new BezierAdapter(circle))								
+			}
+		]]>
+	</mx:Script>
+	<mx:Canvas id="sampleCanvas" x="10" y="10" width="40" height="40" backgroundColor="#FFFFFF"  cornerRadius="10" borderStyle="solid">
+	</mx:Canvas>
+	<mx:HSlider width="160" height="42" minimum="0" maximum="30" id="slider" value="3" y="48" x="5" 
+		change="changeHandler(event)" thumbDrag="dragHnadler(event)" sliderThumbClass="{FixedSliderThumb}"/>
+</mx:Canvas>

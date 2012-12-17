@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+	 width="55" height="54" horizontalAlign="center" xmlns:utils="utils.*" creationComplete="completeHandler()">
+	 	<mx:Script>
+	 		<![CDATA[
+	 			import mx.events.ColorPickerEvent;
+	 			private function completeHandler():void
+	 			{
+	 				picker.addEventListener(ColorPickerEvent.CHANGE, colorChangeHandler);
+	 			}
+	 			
+	 			private function colorChangeHandler(event:ColorPickerEvent):void
+	 			{
+	 				data.color = event.color;
+	 				this.dispatchEvent(new Event("COLOR_CHANGE", true));
+	 				// このEventの二つ目の引数trueで、イベントがバブリング段階で処理されるようにすることが肝要
+	 				// http://shknock.wrryyy.com/2008/04/actionscript-30-%E3%81%AE%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88%E4%BC%9D%E6%92%AD%E3%82%92%E5%AD%A6%E3%81%B6/
+	 				// 参照
+	 			}
+	 			 		
+	 			public function get color():uint
+	 			{
+	 				return picker.selectedColor;
+	 			}
+	 		]]>
+	 	</mx:Script>
+	<utils:MyPicker id="picker" width="48" height="48" x="0" y="0" selectedColor="{data.color}"/>
+</mx:VBox>

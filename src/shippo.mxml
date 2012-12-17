@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:view="view.*" xmlns:utils="utils.*" layout="absolute" 
+	creationComplete="completeHandler()" applicationComplete="appCompleteHandler()" dragDrop="dragDropHandler(event)" keyDown="keyDownHandler(event)"
+	dragEnter="dragEnterHandler(event)" borderColor="#5EADE4" 
+	backgroundGradientAlphas="[1.0, 1.0]" backgroundGradientColors="[#EDEDED, #D8D8D8]" width="100%" height="100%">
+	<mx:Script>
+		<![CDATA[
+			import mx.utils.URLUtil;
+			import mx.skins.halo.TitleBackground;
+			import mx.containers.TitleWindow;
+			import mx.events.*;
+			
+	        import mx.managers.BrowserManager;
+	        import mx.managers.IBrowserManager;
+			
+			import mx.controls.*;
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.core.IUIComponent;
+			import mx.events.BrowserChangeEvent;
+			import mx.managers.PopUpManager;
+			import flash.display.BitmapData;
+			import flash.utils.ByteArray;
+			
+			import mx.managers.DragManager;
+			import controls.Bezier;
+			import utils.BezierAdapter;
+			
+			import view.*;
+			
+			import com.adobe.images.PNGEncoder;
+			
+			private var FRAME_RATE:int = 50;
+			private var CANVAS_X:int = 12;
+			private var CANVAS_Y:int = 9;
+			
+			private var EXPAND_DEL_Y_OFFSET:int = +13;
+			
+			private var EXPAND_SLIDER_X_OFFSET:int = +15;
+			private var CANVAS_SLIDER_Y_OFFSET:int = +240;
+			
+			private var CANVAS_COLORS_Y_OFFSET:int = +79;
+			private var COLOR_EACH_OFFSET:int = +26;
+						
+			private var currentLine:Bezier;
+			private var click_x:int;
+			private var click_y:int;
+			private var currentPointer:DisplayObject;
+			
+			private var undoStack:Array = new Array();
+			
+			private function completeHandler():void
+			{
+            	palette.tileList.setFocus();
+            	
+            	watch.addEventListener("TIME_UP", timeUpHandler);
+            	mainCanvas.addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
+            	thicknessSlider.addEventListener("CHANGE", thicknessChangeHandler);
+            	palette.addEventListener("CHANGE", colorChangeHandler);
+            	palette.addEventListener(mx.events.ColorPickerEvent.CHANGE, colorChangeHandler);
+            	palette.addEventListener("COLOR_CHANGE", colorChangeHandler);
+            	palette.addEventListener("SET_BG_COLOR", bgChangeHandler);
+            	send.addEventListener("SEND", sendClickHandler);
+				
+				var bm:IBrowserManager;
+	            bm = BrowserManager.getInstance();
+	           	bm.addEventListener(BrowserChangeEvent.BROWSER_URL_CHANGE, function():void
+	           		{
+	           			var o:Object = URLUtil.stringToObject(bm.fragment, "&");
+	           			if(o.target != null)
+	           			{
+	           				//Alert.show(o.target + "へのコメントです");
+							showCommentTarget();
+	           			}
+	           		});
+	            bm.init();
+			}
+			
+			private function showCommentTarget():void
+			{
+					
+			}
+			
+			private function appCompleteHandler():void
+			{
+			}
+			
+
+			private function mouseDownHandler(event:MouseEvent):void
+			{
+				if(!watch.started)
+					watch.start();
+
+				mainCanvas.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+	            mainCanvas.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);	
+				mainCanvas.addEventListener(MouseEvent.ROLL_OUT, rollOutHandler);
+				
+				currentLine = new Bezier(event.localX, event.localY, Number(thicknessSlider.value), palette.color , 1);
+				
+				mainCanvas.addChild(new BezierAdapter(currentLine));
+				undoStack = new Array();
+				
+				redo.enabled = false;
+			}
+			
+	        private function mouseMoveHandler(event:MouseEvent):void 
+	        {
+				currentLine.mouseMove(event.localX, event.localY);
+	        }
+	        
+	        private function mouseUpHandler(event:MouseEvent):void 
+	        {
+	        	mainCanvas.removeEventListener("mouseMove", mouseMoveHandler);
+         		mainCanvas.removeEventListener("mouseUp", mouseUpHandler);
+         		
+				currentLine.mouseUp();
+	        }
+	        
+	        private function rollOutHandler(event:MouseEvent):void
+	        {
+	        	currentLine.mouseUp();
+	        }
+	        
+	        
+			private function delClickHandler():void
+			{
+				Alert.show("確認", "この操作はUndoできません。よろしいですか？", (Alert.OK | Alert.CANCEL), this,
+					 function(e:CloseEvent):void{ 
+						 if(e.detail == Alert.OK)
+						 {
+						 	mainCanvas.removeAllChildren(); palette.tileList.setFocus();
+						 	watch.stop();
+						 	mainCanvas.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
+						 	mainCanvas.addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
+						 	
+							palette.visible = true;
+							thicknessSlider.visible = true;
+							enough.visible = true;
+							
+							send.visible = false;
+						 }
+						 else
+						 {
+						 	palette.tileList.setFocus();
+						 }
+					 });
+			}
+
+			//-----------------------------------------------
+			//
+			// Undo, Redo
+			//
+			//-----------------------------------------------
+
+			private function undoClickHandler():void
+			{
+				if(mainCanvas.numChildren > 0)
+					undoStack.push(mainCanvas.removeChildAt(mainCanvas.numChildren - 1));
+			
+				if(!redo.enabled && undoStack.length)
+				{
+					redo.enabled = true;
+				}
+				
+				palette.tileList.setFocus();
+			}
+			
+			private function redoClickHandler():void
+			{
+				if(undoStack.length)
+					mainCanvas.addChild(undoStack.pop());
+				
+				if(!undoStack.length)	
+					redo.enabled = false;
+				
+				
+				palette.tileList.setFocus();
+			}
+
+			//-----------------------------------------------
+			//
+			// カラーパレット、太さ変更
+			//
+			//-----------------------------------------------
+			
+			private function thicknessChangeHandler(event:Event):void
+			{
+				palette.tileList.setFocus();
+			}
+			
+			private function colorChangeHandler(event:Event):void
+			{
+				thicknessSlider.color = palette.color;
+			}
+			
+			//-----------------------------------------------
+			//
+			// ExtractPointerのドラッグ周り処理
+			//
+			//-----------------------------------------------
+			
+			private function dragDropHandler(event:DragEvent):void
+			{
+				trace("dragDrop");
+				
+				if (event.dragSource.hasFormat("img")) {
+					var draggedImage:Image =
+						event.dragSource.dataForFormat('img') as Image;
+	                
+	                var newImage:Image = new Image();
+	                newImage.source = draggedImage.source;
+	                newImage.x = this.mouseX - click_x;
+	                newImage.y = this.mouseY - click_y;
+	                newImage.alpha = 0.23;
+	                  
+	                newImage.addEventListener(MouseEvent.MOUSE_DOWN, pointerMouseDownHandler);
+	                this.addChild(newImage);
+	                
+					moveComponents(newImage);
+	              	}
+			}
+			
+			private function moveComponents(newImage:Image):void
+			{
+				mainCanvas.width = newImage.x - CANVAS_X;
+				mainCanvas.height = newImage.y - CANVAS_Y;
+				
+				thicknessSlider.x = newImage.x + EXPAND_SLIDER_X_OFFSET;
+				palette.x = newImage.x + EXPAND_SLIDER_X_OFFSET;
+				
+				del.y = newImage.y + EXPAND_DEL_Y_OFFSET;
+				
+				undo.x = newImage.x - 200 + 30;
+				undo.y = newImage.y + EXPAND_DEL_Y_OFFSET;
+				
+				redo.x = newImage.x - 302 + 30;
+				redo.y = newImage.y + EXPAND_DEL_Y_OFFSET + 8;
+				
+				watch.x = newImage.x + EXPAND_SLIDER_X_OFFSET;
+				
+				//x="563" y="249"
+				send.x = newImage.x + EXPAND_SLIDER_X_OFFSET + 10;
+			}
+			
+			private function dragEnterHandler(event:DragEvent):void
+			{
+				trace("dragEnter");
+				DragManager.acceptDragDrop(this);
+				this.removeChild(currentPointer);
+			}
+			
+			private function pointerMouseDownHandler(event:MouseEvent):void
+			{
+				trace("mouseDownn");
+				//ドラッグの処理
+	            var dragSource:DragSource = new DragSource();
+	            dragSource.addData(event.currentTarget, "img");
+
+				//ドラッグ中のイメージを作成
+				var imageProxy:UIComponent = new UIComponent();
+				var bitmap:Bitmap = new Bitmap();
+				var bitmapData:BitmapData = new BitmapData(event.currentTarget.width, event.currentTarget.height);
+				
+				bitmapData.draw(event.currentTarget as UIComponent);
+				bitmap.bitmapData = bitmapData;
+				imageProxy.addChild(bitmap);
+
+  	            click_x = event.localX;
+	            click_y = event.localY;
+	            currentPointer = event.currentTarget as UIComponent;
+	            
+	            DragManager.doDrag(event.currentTarget as IUIComponent, dragSource, event, imageProxy);
+	        }
+	        
+   			//-----------------------------------------------
+			//
+			// キーボードイベント
+			//
+			//-----------------------------------------------
+			override protected function keyDownHandler(event:KeyboardEvent):void
+			{
+        		//「>」キーを押すと太く、「<」キーを押すと細くなる
+				if(event.keyCode == 188)
+				{
+					thicknessSlider.value--;	
+				}
+				else if(event.keyCode == 190)
+				{
+					thicknessSlider.value++;					
+				}
+				
+				// undo, redo
+				if(event.keyCode == 90 && event.ctrlKey)
+				{
+					undoClickHandler();
+				}
+				else if(event.keyCode == 89 && event.ctrlKey)
+				{
+					redoClickHandler();
+				}
+				
+				if(!send.visible)
+				{
+					palette.tileList.setFocus();
+				}
+            	super.keyDownHandler(event);
+        	}
+        	        	
+        	//-----------------------------------------------
+			//
+			// タイムアップ
+			//
+			//-----------------------------------------------
+			private function timeUpHandler(event:Event):void
+			{
+				mainCanvas.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
+
+				// 可視・不可視
+				palette.visible = false;
+				thicknessSlider.visible = false;
+				enough.visible = false;
+				send.visible = true;
+				
+
+				trace("timeUpHandler");
+			}
+			
+			private function enoughHandler(event:Event):void
+			{
+				Alert.show("確認", "これで完成でよろしいですか？", (Alert.OK | Alert.CANCEL), this,
+					 function(e:CloseEvent):void{ 
+						 if(e.detail == Alert.OK)
+						 {
+						 	trace("enough");
+						 	watch.forceStop();
+						 }
+						 else
+						 {
+						 	palette.tileList.setFocus();
+						 } 
+				});
+			}
+			
+        	//-----------------------------------------------
+			//
+			// 画像送信
+			//
+			//-----------------------------------------------
+			
+			private function sendClickHandler(event:Event):void
+			{
+				pngOutput();
+			}
+			
+			private function pngOutput():void
+	        {
+				var bmpdata:BitmapData = new BitmapData(mainCanvas.width, mainCanvas.height, true, 0xFFFFFF);
+				bmpdata.draw(mainCanvas);
+
+				var byteArr:ByteArray = PNGEncoder.encode(bmpdata);
+				
+				var url:String = "php/makefile.php";
+				
+				var urlRequest:URLRequest = new URLRequest(url); // CGIPath...サーバCGIURL
+				var urlLoader:URLLoader = new URLLoader();
+				
+				urlLoader.addEventListener(Event.COMPLETE,function ():void
+				{
+					Alert.show("送信に成功。サイトに戻ります。", "", 0x4, null, changePageHandler);
+				});
+				
+				urlLoader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, function ():void
+				{
+					Alert.show("送信に失敗");
+					send.sendButton.enabled = true;
+				});
+				
+				urlRequest.contentType = "application/octet-stream";
+				urlRequest.method = URLRequestMethod.POST;
+				urlRequest.data = byteArr;
+				urlLoader.load(urlRequest);
+	        }
+	        
+	        private function changePageHandler(event:Event):void
+	        {
+				var returnUrl:String = "http://mono.kmc.gr.jp/~miz/shippo/oekaki.php";
+	            var request:URLRequest = new URLRequest(returnUrl);
+	            request.method = URLRequestMethod.GET;
+        		navigateToURL(request, "_self");
+	        }
+	        
+	        private function bgChangeHandler(event:Event):void
+	        {
+	        	mainCanvas.setStyle("backgroundColor", palette.color);
+	        }
+		]]>
+	</mx:Script>
+	
+	<mx:Canvas x="12" y="8" width="524" height="524" backgroundColor="#FFFFFF" id="mainCanvas" cornerRadius="10" borderStyle="solid"/>
+
+	<view:StopWatch id="watch" x="570" y="10"/>
+	<!--<view:CommentTargetViewer id="commentTarget" x="550" y="55"/>-->
+	<view:ThicknessSlider x="553" y="209" id="thicknessSlider"/>
+	<view:ColorPalette x="553" y="319" id="palette"/>
+
+	<mx:Image x="536" y="534" source="assets/point.gif" alpha="0.23" mouseDown="pointerMouseDownHandler(event)" id="extractPointer"/>
+	<mx:Button x="29" y="540" label="りせっと" width="130" height="38" enabled="true" id="del" click="delClickHandler()" cornerRadius="20" borderColor="#6FC4FF"/>	
+	<mx:Button x="359" y="544" label="いまのなし" width="149" height="55" id="undo" click="undoClickHandler()" cornerRadius="20" borderColor="#6FC4FF"/>
+	<mx:Button x="257" y="552" width="94" height="47" label="やっぱりあり" id="redo" click="redoClickHandler()" enabled="{false}" borderColor="#6FC4FF" cornerRadius="20"/>
+	
+	<!--<mx:Button x="{this.width - 200}" y="{this.height - 90}" label="一時停止" width="80" height="80" id="pause" click="pauseHandler(event)"/>-->
+	<mx:Button x="{this.width - 100}" y="{this.height - 90}" width="80" height="80" label="これで完成" id="enough" click="enoughHandler(event)" cornerRadius="20" borderColor="#6FC4FF"/>
+	<view:SendBox id="send" visible="false" x="563" y="249"/>
+</mx:Application>

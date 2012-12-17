@@ -1,0 +1,102 @@
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>gazo</title>
+	<style>
+		.head		{background-color:#f0f8ff;
+		width:900px;
+		height:180px;
+		border:0px;
+		margin:0 0 0 0;
+		}
+		.head h1	{
+		font-size:24px;
+		font-family:'Comic Sans MS';
+		color:black;
+		margin-bottom:1px
+		}
+		.head h2	{
+		}
+		.head div	{
+		font-size:12px;
+		color:black}
+		.head1		{width:45px;
+		text-align:right;
+		border-right:0px;
+		}
+		.head2		{padding-left:9px;
+		text-align:left;
+		border-right:0px;
+		}
+
+
+		.side_main	{width:900px;
+		top:0px;
+		border:0px;
+		}
+		.side		{background-color:#f0f8ff;
+		width:150px;
+		vertical-align:top;
+		border-right:0px;
+		}
+		.main		{
+		padding-left:30px;
+		padding-right:30px;
+		border-right:0px;
+		}
+
+		.entry		{
+		margin-top:30px;
+		margin-bottom:80px;
+		}
+
+	</style>
+</head>
+<body>
+	<!--ヘッダーテーブル -->
+	<table class="head">
+	<tr>
+		<td class="head1"><img src="../assets/logo.gif" alt="まだないよ"></td>
+		<td class="head2">
+			<h1 lang="en">オエカキ ☆ サンプン</h1>
+			<div>3分間の中で気楽に描いたり、精一杯描いたり。</div>
+		</td>
+	</tr>
+	</table>
+
+	<table class="side_main" cellspacing="0">
+	<tr>
+		<!--サイド-->
+		<td class="side">
+			<div>
+				<a href="">ログイン</a>
+			</div>
+			<div>
+				<a href="">新規登録</a>
+			</div>
+			<div>
+				<a href="">このサイトについて</a>
+			</div>
+			<div>
+				<a href="../shippo.html">描いてみる！</a>
+			</div>
+		</td>
+		<!--main source -->
+		<td class="main">
+		<?php foreach($entries as $entry) { ?>
+		<div class="entry">
+			<h1 lang="en">
+				タイトル『<?php echo h($entry['Entry']['title']) ?>』</h1>
+			<p><?php echo h($entry['Entry']['fname']) ?></p>
+			<p><img src="../images/<?php echo h($entry['Entry']['fname']) ?>"/></p>
+			<p>コメントが入ります</p>
+		</div>
+		<?php } ?>
+		</td>
+	</tr>
+	</table>
+	<!--<?php foreach($entries as $entry) { ?>
+	<p><?php echo h($entry['Entry']['title']) ?></p>
+	<p><?php echo h($entry['Entry']['fname']) ?></p>
+	<?php } ?>
+	-->
+</body>

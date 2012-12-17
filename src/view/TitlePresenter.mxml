@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="180" height="40" creationComplete="completeHandler()">
+	<mx:Script>
+		<![CDATA[
+			import loader.XMLLoader;
+			
+			[Bindable]
+			private var xml:XML;
+			
+			private var _title:String;
+			
+			public function get title():String
+			{
+				if(_title != null)
+				{
+					return _title;
+				}
+				else
+					return "";
+			}
+			
+			private function completeHandler():void
+			{
+				var xmlLoader:XMLLoader = new XMLLoader();
+				xmlLoader.addEventListener(XMLLoader.LOAD_COMPLETE, function():void{
+					xml = xmlLoader.getXML();
+					titleList.text=xml.toString();
+					titleList.text="題「 "+selectTitle(xml)+" 」";
+					});
+				xmlLoader.load("data/TitleList.xml");
+			}
+			private function selectTitle(xml:XML):String
+			{
+				_title = xml.children()[(int(Math.random() * xml.children().length()))].toString();
+				return _title;
+			}
+		]]>
+	</mx:Script>
+	<mx:Label id="titleList" text="取得中..." x="0" y="0" width="100%" height="100%"/>
+</mx:Canvas>

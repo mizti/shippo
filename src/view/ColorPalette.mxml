@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:utils="utils.*" creationComplete="completeHandler()" cornerRadius="10">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.collections.ArrayCollection;
+			import mx.binding.utils.ChangeWatcher;
+			
+			private var listArray:Array;
+
+            [Bindable]
+            public var tileListdp:ArrayCollection;
+			
+			[Bindable]
+			public var hoge:Array = new Array(0x6688DD, 0xFF0044, 0x6688DD, 0xFF0044, 0x6688DD, 0xFF0044, 0x6688DD, 0xFF0044);
+			
+			public function get color():uint
+			{
+				return tileList.dataProvider[tileList.selectedIndex == (-1) ? 0 : tileList.selectedIndex].color;
+			}
+			
+			private function completeHandler():void
+			{
+				tileList.selectedIndex = 0;
+				//tileList.addEventListener("COLOR_CHANGE", dataChangeHandler);
+			}
+			
+			private function changeHandler(event:Event):void
+			{
+				dispatchEvent(new Event("CHANGE"));
+			}
+			
+			private function bgClickHandler():void
+			{
+				dispatchEvent(new Event("SET_BG_COLOR"));
+			}
+		]]>
+	</mx:Script>
+	<mx:TileList id="tileList" dataProvider="{data16}" selectionColor="#222222" rowCount="4" itemRenderer="utils.PickRenderer" change="changeHandler(event)" cornerRadius="10">
+	</mx:TileList>
+	<mx:HBox>
+		<mx:Spacer width="48"/>
+		<mx:Button width="110" label="背景色に設定" id="setBGC" click="bgClickHandler()" borderColor="#6FC4FF" cornerRadius="20"/>
+	</mx:HBox>
+	<mx:Array id="data16">
+			<mx:Object color="#000000"/>
+			<mx:Object color="#666666"/>
+			<mx:Object color="#AAAAAA"/>
+			<mx:Object color="#FFFFFF"/>
+
+			<mx:Object color="#0000FF"/>
+			<mx:Object color="#0066FF"/>
+			<mx:Object color="#00FF00"/>
+			<mx:Object color="#FFFF33"/>
+
+			<mx:Object color="#FF0000"/>
+			<mx:Object color="#990099"/>
+			<mx:Object color="#FF66FF"/>
+			<mx:Object color="#9999FF"/>
+
+			<mx:Object color="#FF99FF"/>
+			<mx:Object color="#FFCC66"/>
+			<mx:Object color="#FFCC99"/>
+			<mx:Object color="#FFFF99"/>
+	</mx:Array>
+</mx:VBox>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="250" height="80" creationComplete="completeHandler()">
+	<mx:Script>
+		<![CDATA[
+			import mx.messaging.channels.StreamingAMFChannel;
+			import mx.containers.Tile;
+			import flash.utils.Timer;
+			
+			private const TIME_LIMIT:int = 3;//分
+			//private var FRAME_RATE = 50;
+						
+			private var timer:Timer;
+			private const limit:int = TIME_LIMIT * 60 * 10;
+
+			private var i:int = 0;
+			
+			private var _started:Boolean;
+
+			public function get started():Boolean
+			{
+				return _started;
+			}
+			
+			private function completeHandler():void
+			{
+			
+			}			
+			
+			public function start():void
+			{
+				timer = new Timer(80, limit);
+				timer.addEventListener(TimerEvent.TIMER, showTime);
+				timer.addEventListener(TimerEvent.TIMER_COMPLETE, timeUp);
+				_started = true;
+				timer.start();
+			}
+			
+			public function stop():void
+			{
+				if(timer != null)
+					timer.stop();
+				_started = false;
+				text.text = TIME_LIMIT.toString() + ":00";
+			}
+			
+			private function showTime(event:TimerEvent):void
+			{	
+				var minutes:String = int((limit - event.target.currentCount) / 600).toString();
+				var seconds:String = int(((limit - event.target.currentCount) % 600)/10).toString();
+				text.text = minutes + ":" + ((seconds.length == 1) ? "0" + seconds: seconds);
+			}
+			
+			private function timeUp(event:TimerEvent):void
+			{
+				var endEvent:Event = new Event("TIME_UP");
+				dispatchEvent(endEvent);
+				text.text = "おつかれさまです。";
+			}
+			
+			// 外部から強制的に終了させます。
+			public function forceStop():void
+			{
+				if(timer != null)
+					timer.reset();
+				var endEvent:Event = new Event("TIME_UP");
+				dispatchEvent(endEvent);
+				text.text = "おつかれさまです。";
+			}
+		]]>
+	</mx:Script>
+	<mx:Text id="text" text="{TIME_LIMIT.toString() + ':00'}"  fontSize="26" width="100%" height="100%" fontFamily="15:00" fontWeight="bold"/>
+</mx:Canvas>

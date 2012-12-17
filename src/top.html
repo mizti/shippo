@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>オエカキ☆サンプン(α)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=SHIFT_JIS">
+<script type="text/javascript" src="prototype.js"></script>
+<script type="text/javascript" src="jkl-parsexml.js"></script>
+<script type="text/javascript"><!--
+function loadXMLFile()
+{
+	var url = "data/data.xml";
+	var http = new JKL.ParseXML( url );          // JKL.ParseXMLオブジェクトを生成
+	var data = http.parse();                    // ダウンロード～解析する
+	
+
+	var items = data["items"]["item"];
+	str = "";
+	for(var i = 0 ; i < items.length ; i++)
+	{
+		if(items[i]["comment"] != null)
+		{	
+			str += "<div><nobr>";
+			str += "<img src='images/" + items[i]["src"] + "'/>";
+			
+			for(var j = 0 ; j < items[i]["comment"]["item"].length ; j++)
+			{
+				str += " ＜― ";
+				str += "<img src='images/" + items[i]["comment"]["item"][j]["src"] + "'/>";
+			}
+			str += "<a href='http://mono.kmc.gr.jp/~miz/shippo/shippo.html#target=" + items[i]["src"] +"'>＜</a></nobr></div><br><br>";
+		}
+		else
+		{
+			str += "<div><nobr>";
+			str += "<img src='images/" + items[i]["src"] + "'/>";
+			str += "<a href='http://mono.kmc.gr.jp/~miz/shippo/shippo.html#target=" + items[i]["src"] +"'>＜</a>";
+			str += "</nobr></div><br><br>";
+		}
+	}
+	$("result").innerHTML = str;
+}
+// --></script>
+
+
+</head>
+<body onLoad="loadXMLFile()">
+
+
+<div>
+<div><font size="2" color="#ff0000">試作中のページです。コメント機能等はまだないです。</font></div>
+<h1>オエカキ☆サンプン(α)</h1><br>
+息抜きに落書きしたり。絵の練習をしたり。やり場の無い思いを叫んだり。
+</div>
+
+<div><h3><a href="http://mono.kmc.gr.jp/~miz/shippo/shippo.html">描いてみる！</a></h3><a href="http://mono.kmc.gr.jp/~miz/shippo/manual.html">使い方とか</a>　　<a href="http://mono.kmc.gr.jp/~miz/shippo/updatelog.html">更新履歴</a></div>
+
+<br>
+コメントをつけたいときは絵の右端の"＜"をクリックしてください
+
+<!--
+<form>
+<input type="button" value="読み込み" onClick="loadXMLFile()">
+</form>
+-->
+<p>
+呼び出しテスト
+<a href="shippo.html#firstName=Nick&lastName=Shimizu">描いてみる！</a>
+</p>
+<div id="result"></div>
+</body>
+</html>

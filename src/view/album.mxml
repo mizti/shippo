@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="754" height="194" backgroundColor="#F50B0B" alpha="0.1" horizontalScrollPolicy="off"
+	mouseOut="mouseOutHandler(event)" mouseOver="mouseOverHandler(event)">
+	<mx:Script>
+		<![CDATA[
+			private function mouseOverHandler(event:MouseEvent):void
+			{
+				event.currentTarget.alpha = 1;
+			}
+			private function mouseOutHandler(event:MouseEvent):void
+			{
+				event.currentTarget.alpha = 0.1;
+			}
+			
+			//http://blog.3r1c.net/?p=84と
+			//http://blog.benstucki.net/?id=23
+			//あたりを参考にスクロールバーの作成よろ
+			
+		]]>
+	</mx:Script>
+	<mx:Canvas backgroundColor="#FFFF00" width="95" height="95" x="30" y="53"/>
+	<mx:Canvas backgroundColor="#FFFF00" width="95" height="95" x="146" y="53"/>
+	<mx:Canvas backgroundColor="#FFFF00" width="95" height="95" x="265" y="53"/>
+	<mx:Canvas backgroundColor="#FFFF00" width="95" height="95" x="387" y="53"/>
+	<mx:Canvas backgroundColor="#FFFF00" width="95" height="95" x="504" y="53"/>
+	<mx:Canvas backgroundColor="#FFFF00" width="95" height="95" x="623" y="53"/>
+	<mx:Canvas backgroundColor="#FFFF00" width="95" height="95" x="800" y="53"/>
+	
+</mx:Canvas>

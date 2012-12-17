@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="178" height="300">
+	<mx:Script>
+		<![CDATA[
+		private function clickHandler():void
+		{
+			dispatchEvent(new Event('SEND'));
+			sendButton.enabled = false;
+		}
+		]]>
+	</mx:Script>
+	<!--
+	<mx:Text text="よろしければお名前を入れください。" x="10" y="32"/>
+	<mx:Text text="(名無しでも送れます)" x="10" y="46"/>
+	<mx:TextInput text="工事中です・・・" enabled="false" id="nameInput" x="10" y="72" height="30" editable="true" fontSize="16" fontWeight="bold"/>
+	
+	<mx:Text text="題を入れください。" x="10" y="124"/>
+	<mx:Text text="(無題でも送れます)" x="10" y="138"/>
+	<mx:TextInput text="工事中です・・・" enabled="false" id="titleInput" x="10" y="155" height="30" editable="true" fontSize="16" fontWeight="bold"/>
+	-->
+	<mx:Text text="送信してよろしければ押してください。" x="8" y="205"/>
+	
+	<mx:Button id="sendButton" label="送信" width="121" height="59" x="28.5" y="231" 
+		click="clickHandler()"  cornerRadius="20" borderColor="#6FC4FF"/>
+</mx:Canvas>
